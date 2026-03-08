@@ -1,0 +1,107 @@
+---
+---
+
+<footer class="footer glass">
+  <div class="container footer-content">
+    <div class="footer-brand">
+      <a href="/" class="logo">
+        <span class="logo-icon">☁️</span>
+        Santara
+      </a>
+      <p class="brand-desc">Temukan aroma khas Anda di balik awan.</p>
+    </div>
+    
+    <div class="footer-links">
+      <div class="link-group">
+        <h4>Belanja</h4>
+        <a href="/shop?category=floral">Bunga (Floral)</a>
+        <a href="/shop?category=woody">Kayu (Woody)</a>
+        <a href="/shop?category=fresh">Segar (Fresh)</a>
+        <a href="/shop?category=oriental">Timur (Oriental)</a>
+      </div>
+      <div class="link-group">
+        <h4>Perusahaan</h4>
+        <a href="/about">Tentang Kami</a>
+        <a href="/contact">Kontak</a>
+        <a href="/faq">Tanya Jawab</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; {new Date().getFullYear()} Parfum Santara. Hak cipta dilindungi.</p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    margin-top: 4rem;
+    padding-top: 4rem;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  
+  .footer-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+    padding-bottom: 3rem;
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--c-navy);
+    margin-bottom: 1rem;
+  }
+  
+  .brand-desc {
+    color: var(--c-text-light);
+    max-width: 300px;
+  }
+  
+  .footer-links {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+  
+  .link-group h4 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+  }
+  
+  .link-group a {
+    display: block;
+    color: var(--c-text-light);
+    margin-bottom: 0.5rem;
+  }
+  
+  .link-group a:hover {
+    color: var(--c-accent);
+  }
+  
+  .footer-bottom {
+    text-align: center;
+    padding: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.4);
+    color: var(--c-text-light);
+    font-size: 0.9rem;
+  }
+  
+  @media (min-width: 768px) {
+    .footer-content {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+    
+    .footer-links {
+      gap: 4rem;
+    }
+  }
+</style>

@@ -1,0 +1,167 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { getDb, type Product, type Category } from '../lib/db';
+
+const categoryId = Astro.url.searchParams.get('category') || '';
+
+const db = getDb();
+
+// Fetch categories
+let categories: Category[] = [];
+try {
+  categories = db.prepare('SELECT * FROM categories').all() as Category[];
+} catch (e) {
+  console.error(e);
+}
+
+// Fetch products
+let products: Product[] = [];
+try {
+  if (categoryId) {
+    products = db.prepare('SELECT * FROM products WHERE categoryId = ?').all(categoryId) as Product[];
+  } else {
+    products = db.prepare('SELECT * FROM products').all() as Product[];
+  }
+} catch (e) {
+  console.error(e);
+}
+
+const activeCategoryName = categoryId 
+  ? categories.find(c => c.id === categoryId)?.name || 'Tersaring'
+  : 'Semua Produk';
+---
+
+<BaseLayout title={`Belanja - ${activeCategoryName}`}>
+  <div class="shop-header">
+    <div class="container text-center animate-fade-in">
+      <h1 class="page-title">{activeCategoryName}</h1>
+      <p class="page-subtitle">Temukan pasangan sempurnamu.</p>
+    </div>
+  </div>
+
+  <section class="shop-content container">
+    <aside class="filters-sidebar animate-fade-in delay-100 glass-card">
+      <h3 class="filter-title">Kategori</h3>
+      <ul class="category-list">
+        <li>
+          <a href="/shop" class={!categoryId ? 'active' : ''}>Semua Produk</a>
+        </li>
+        {categories.map(category => (
+          <li>
+            <a href={`/shop?category=${category.id}`} class={categoryId === category.id ? 'active' : ''}>
+              {category.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </aside>
+
+    <div class="product-grid">
+      {products.map((product, index) => (
+        <div class={`animate-fade-in delay-${(index % 3 + 1) * 100}`}>
+          <ProductCard product={product} />
+        </div>
+      ))}
+      
+      {products.length === 0 && (
+        <div class="empty-state glass">
+          <p>Tidak ada produk di kategori ini.</p>
+          <a href="/shop" class="btn btn-primary mt-4">Lihat Semua Produk</a>
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .shop-header {
+    background: linear-gradient(to bottom, var(--c-cloud-dark), var(--c-cloud));
+    padding: 6rem 0 3rem;
+    margin-bottom: 4rem;
+  }
+  
+  .page-title {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--c-navy);
+  }
+  
+  .page-subtitle {
+    color: var(--c-text-light);
+    font-size: 1.1rem;
+  }
+  
+  .shop-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    margin-bottom: 6rem;
+  }
+  
+  .filters-sidebar {
+    padding: 2rem;
+    border-radius: var(--radius-md);
+    height: fit-content;
+  }
+  
+  .filter-title {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    color: var(--c-navy);
+    border-bottom: 1px solid rgba(126, 184, 224, 0.2);
+    padding-bottom: 0.5rem;
+  }
+  
+  .category-list {
+    list-style: none;
+  }
+  
+  .category-list li {
+    margin-bottom: 0.75rem;
+  }
+  
+  .category-list a {
+    display: block;
+    color: var(--c-text-main);
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+  }
+  
+  .category-list a:hover {
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--c-accent);
+  }
+  
+  .category-list a.active {
+    background: var(--c-white);
+    color: var(--c-accent);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+  }
+  
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    border-radius: var(--radius-md);
+  }
+  
+  .mt-4 {
+    margin-top: 1.5rem;
+  }
+  
+  @media (min-width: 768px) {
+    .shop-content {
+      grid-template-columns: 250px 1fr;
+      align-items: start;
+    }
+  }
+</style>

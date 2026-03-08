@@ -1,0 +1,327 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getDb, type Product, type Category } from '../../lib/db';
+
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect('/404');
+}
+
+const db = getDb();
+let product: Product | undefined;
+let category: Category | undefined;
+let relatedProducts: Product[] = [];
+
+try {
+  product = db.prepare('SELECT * FROM products WHERE id = ?').get(id) as Product | undefined;
+  
+  if (product) {
+    category = db.prepare('SELECT * FROM categories WHERE id = ?').get(product.categoryId) as Category | undefined;
+    relatedProducts = db.prepare('SELECT * FROM products WHERE categoryId = ? AND id != ? LIMIT 3').all(product.categoryId, id) as Product[];
+  }
+} catch (e) {
+  console.error(e);
+}
+
+if (!product) {
+  return Astro.redirect('/404');
+}
+---
+
+<BaseLayout title={product.name} description={product.description}>
+  <div class="breadcrumb container">
+    <a href="/">Beranda</a> / <a href="/shop">Belanja</a> / <a href={`/shop?category=${product.categoryId}`}>{category?.name || product.categoryId}</a> / <span>{product.name}</span>
+  </div>
+
+  <section class="product-detail container">
+    <div class="product-gallery animate-fade-in delay-100">
+      <div class="image-showcase glass-card">
+        <img src={product.image} alt={product.name} />
+      </div>
+    </div>
+    
+    <div class="product-info animate-fade-in delay-200">
+      <div class="meta">
+        <span class="category-badge">{category?.name || product.categoryId}</span>
+      </div>
+      
+      <h1 class="title">{product.name}</h1>
+      <div class="price">Rp {product.price.toLocaleString('id-ID')}</div>
+      
+      <div class="description">
+        <p>{product.description}</p>
+      </div>
+      
+      {product.notes && (
+        <div class="fragrance-notes glass">
+          <span class="label">Catatan Utama:</span>
+          <span>{product.notes}</span>
+        </div>
+      )}
+      
+      <div class="actions">
+        <a href="https://shopee.co.id/" target="_blank" rel="noopener noreferrer" class="btn btn-primary lg" style="background-color: #ee4d2d; color: white;">
+          Beli Di Shoppe
+        </a>
+        <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" class="btn btn-primary lg" style="background-color: #25D366; color: white;">
+          Beli Lewat Whatsapp
+        </a>
+      </div>
+      
+      <div class="perks">
+        <div class="perk">
+          <span class="icon">✨</span>
+          <span>Aroma tahan lama</span>
+        </div>
+        <div class="perk">
+          <span class="icon">🐰</span>
+          <span>Formula bebas dari kekejaman hewani</span>
+        </div>
+        <div class="perk">
+          <span class="icon">📦</span>
+          <span>Gratis pengiriman di atas Rp 500.000</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {relatedProducts.length > 0 && (
+    <section class="related-products container section">
+      <h2 class="section-title text-center">Anda Mungkin Juga Suka</h2>
+      <div class="related-grid animate-fade-in delay-300">
+        {relatedProducts.map(p => (
+           <a href={`/product/${p.id}`} class="related-card glass-card">
+             <div class="image-wrapper">
+               <img src={p.image} alt={p.name} loading="lazy" />
+             </div>
+             <div class="info">
+               <h4>{p.name}</h4>
+               <p>Rp {p.price.toLocaleString('id-ID')}</p>
+             </div>
+           </a>
+        ))}
+      </div>
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    padding: 2rem 2rem 0;
+    font-size: 0.9rem;
+    color: var(--c-text-light);
+  }
+  
+  .breadcrumb a {
+    color: var(--c-navy);
+  }
+  
+  .breadcrumb a:hover {
+    color: var(--c-accent);
+  }
+  
+  .product-detail {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    padding: 3rem 2rem 6rem;
+  }
+  
+  .image-showcase {
+    aspect-ratio: 4/5;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    padding: 0.5rem;
+  }
+  
+  .image-showcase img {
+    border-radius: calc(var(--radius-lg) - 0.5rem);
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .product-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .meta {
+    margin-bottom: 1rem;
+  }
+  
+  .category-badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    background: var(--c-sky-light);
+    color: var(--c-accent);
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .title {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .price {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--c-navy);
+    margin-bottom: 2rem;
+  }
+  
+  .description {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--c-text-main);
+    margin-bottom: 2rem;
+  }
+  
+  .fragrance-notes {
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 2.5rem;
+    display: flex;
+    gap: 0.75rem;
+  }
+  
+  .fragrance-notes .label {
+    font-weight: 600;
+    color: var(--c-navy);
+  }
+  
+  .actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+  }
+  
+  .quantity-selector {
+    display: flex;
+    align-items: center;
+    background: var(--c-white);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(126, 184, 224, 0.2);
+  }
+  
+  .qty-btn {
+    width: 40px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--c-text-main);
+  }
+  
+  .qty-btn:hover {
+    background: var(--c-cloud);
+    color: var(--c-accent);
+  }
+  
+  .quantity-selector input {
+    width: 40px;
+    height: 48px;
+    text-align: center;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    background: transparent;
+    -moz-appearance: textfield;
+  }
+  
+  .quantity-selector input::-webkit-outer-spin-button,
+  .quantity-selector input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  .btn.lg {
+    padding: 0 2rem;
+    height: 48px;
+    font-size: 1.1rem;
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  .perks {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .perk {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--c-text-light);
+    font-size: 0.95rem;
+  }
+  
+  .perk .icon {
+    font-size: 1.2rem;
+  }
+  
+  /* Related Products */
+  .section {
+    padding: 4rem 2rem 6rem;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+    margin-bottom: 2.5rem;
+  }
+  
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 2rem;
+  }
+  
+  .related-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .related-card .image-wrapper {
+    aspect-ratio: 1;
+    overflow: hidden;
+  }
+  
+  .related-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-slow);
+  }
+  
+  .related-card:hover img {
+    transform: scale(1.05);
+  }
+  
+  .related-card .info {
+    padding: 1rem;
+    text-align: center;
+  }
+  
+  .related-card h4 {
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  @media (min-width: 768px) {
+    .product-detail {
+       grid-template-columns: 1fr 1fr;
+       align-items: start;
+    }
+  }
+</style>

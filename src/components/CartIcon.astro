@@ -1,0 +1,72 @@
+---
+// A component that displays a cart icon and fetches the initial cart count via a light client script if needed
+---
+
+<a href="/cart" class="cart-btn" aria-label="Shopping Cart">
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="9" cy="21" r="1"></circle>
+    <circle cx="20" cy="21" r="1"></circle>
+    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+  </svg>
+  <span class="cart-count" id="cart-count">0</span>
+</a>
+
+<style>
+  .cart-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.5);
+    transition: all var(--transition-normal);
+  }
+  
+  .cart-btn:hover {
+    background: var(--c-white);
+    color: var(--c-accent);
+    transform: translateY(-2px);
+  }
+  
+  .cart-count {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: var(--c-accent);
+    color: var(--c-white);
+    font-size: 0.7rem;
+    font-weight: 700;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--c-white);
+  }
+</style>
+
+<script>
+  // Simple client-side script to update cart count
+  async function updateCartCount() {
+    try {
+      const res = await fetch('/api/cart');
+      if (res.ok) {
+        const data = await res.json();
+        const count = data.items.reduce((acc: number, item: any) => acc + item.quantity, 0);
+        const countEl = document.getElementById('cart-count');
+        if (countEl) countEl.textContent = count.toString();
+      }
+    } catch (e) {
+      console.error('Failed to fetch cart count');
+    }
+  }
+
+  // Update on load
+  updateCartCount();
+  
+  // Also listen for custom events like 'cart-updated'
+  document.addEventListener('cart-updated', updateCartCount);
+</script>

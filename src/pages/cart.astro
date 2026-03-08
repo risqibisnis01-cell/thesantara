@@ -1,0 +1,449 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getDb } from '../lib/db';
+
+const db = getDb();
+let items = [];
+let subtotal = 0;
+
+try {
+  items = db.prepare(`
+    SELECT c.id as cartItemId, c.productId, c.quantity, p.name, p.price, p.image, p.categoryId
+    FROM cart_items c
+    JOIN products p ON c.productId = p.id
+  `).all();
+  
+  subtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+} catch (e) {
+  console.error(e);
+}
+
+const shipping = subtotal > 0 && subtotal < 500000 ? 50000 : 0;
+const total = subtotal + shipping;
+---
+
+<BaseLayout title="Keranjang Anda">
+  <div class="cart-header container text-center animate-fade-in">
+    <h1 class="page-title">Keranjang Belanja</h1>
+    <p class="page-subtitle">Tinjau wewangian pilihan Anda sebelum checkout.</p>
+  </div>
+
+  <section class="cart-content container">
+    {items.length === 0 ? (
+      <div class="empty-cart glass-card animate-fade-in delay-100">
+        <div class="empty-icon">🛒</div>
+        <h2>Keranjang Anda sedamai awan.</h2>
+        <p>Sepertinya Anda belum menambahkan aroma apa pun.</p>
+        <a href="/shop" class="btn btn-primary mt-4">Jelajahi Wewangian</a>
+      </div>
+    ) : (
+      <div class="cart-grid">
+        <div class="cart-items animate-fade-in delay-100">
+          <div class="glass-card">
+            {items.map(item => (
+              <div class="cart-item" data-id={item.cartItemId} data-price={item.price}>
+                <div class="item-img glass">
+                  <img src={item.image} alt={item.name} />
+                </div>
+                
+                <div class="item-details">
+                  <span class="category">{item.categoryId}</span>
+                  <h3><a href={`/product/${item.productId}`}>{item.name}</a></h3>
+                  <div class="item-price hide-desktop">Rp {item.price.toLocaleString('id-ID')}</div>
+                </div>
+                
+                <div class="item-price hide-mobile">
+                  Rp {item.price.toLocaleString('id-ID')}
+                </div>
+                
+                <div class="item-quantity">
+                  <div class="quantity-selector">
+                    <button class="qty-btn btn-minus">-</button>
+                    <input type="number" class="qty-input" value={item.quantity} min="0" max="100" />
+                    <button class="qty-btn btn-plus">+</button>
+                  </div>
+                </div>
+                
+                <div class="item-total">
+                  Rp {(item.price * item.quantity).toLocaleString('id-ID')}
+                </div>
+                
+                <button class="remove-btn" aria-label="Hapus item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div class="cart-summary animate-fade-in delay-200">
+          <div class="glass-card summary-box">
+            <h3 class="summary-title">Ringkasan Pesanan</h3>
+            
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span id="subtotal-display">Rp {subtotal.toLocaleString('id-ID')}</span>
+            </div>
+            
+            <div class="summary-row">
+              <span>Pengiriman</span>
+              <span id="shipping-display">
+                {shipping === 0 ? 'Gratis' : `Rp ${shipping.toLocaleString('id-ID')}`}
+              </span>
+            </div>
+            
+            <hr class="summary-divider" />
+            
+            <div class="summary-row total">
+              <span>Total</span>
+              <span id="total-display">Rp {total.toLocaleString('id-ID')}</span>
+            </div>
+            
+            <button class="btn btn-primary lg checkout-btn">
+              Lanjutkan Pembayaran
+            </button>
+            
+            <p class="shipping-notice">
+              Gratis pengiriman untuk pesanan di atas Rp 500.000
+            </p>
+          </div>
+        </div>
+      </div>
+    )}
+  </section>
+</BaseLayout>
+
+<style>
+  .cart-header {
+    padding: 6rem 0 3rem;
+  }
+  
+  .page-title {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--c-navy);
+  }
+  
+  .empty-cart {
+    padding: 6rem 2rem;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.5;
+  }
+  
+  .empty-cart h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .empty-cart p {
+    color: var(--c-text-light);
+    margin-bottom: 2rem;
+  }
+  
+  .mt-4 { margin-top: 2rem; }
+  
+  .cart-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-bottom: 6rem;
+  }
+  
+  .cart-item {
+    display: grid;
+    grid-template-columns: 80px 1fr auto auto;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(126, 184, 224, 0.2);
+    position: relative;
+    transition: opacity var(--transition-normal);
+  }
+  
+  .cart-item:last-child {
+    border-bottom: none;
+  }
+  
+  .cart-item.loading {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  
+  .item-img {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    padding: 0.25rem;
+  }
+  
+  .item-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: calc(var(--radius-sm) - 0.25rem);
+  }
+  
+  .category {
+    font-size: 0.75rem;
+    color: var(--c-sky);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  
+  .item-details h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .item-details h3 a:hover {
+    color: var(--c-accent);
+  }
+  
+  .item-price {
+    font-weight: 500;
+    color: var(--c-text-main);
+  }
+  
+  .item-total {
+    font-weight: 600;
+    color: var(--c-navy);
+    min-width: 80px;
+    text-align: right;
+  }
+  
+  .quantity-selector {
+    display: flex;
+    align-items: center;
+    background: var(--c-white);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(58, 123, 213, 0.05);
+    border: 1px solid rgba(126, 184, 224, 0.2);
+    height: 36px;
+  }
+  
+  .qty-btn {
+    width: 32px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--c-text-main);
+    font-weight: 600;
+  }
+  
+  .qty-btn:hover {
+    background: var(--c-cloud);
+    color: var(--c-accent);
+  }
+  
+  .qty-input {
+    width: 32px;
+    height: 100%;
+    text-align: center;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    background: transparent;
+    -moz-appearance: textfield;
+  }
+  
+  .qty-input::-webkit-outer-spin-button,
+  .qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  .remove-btn {
+    color: var(--c-text-light);
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all var(--transition-fast);
+  }
+  
+  .remove-btn:hover {
+    background: rgba(220, 38, 38, 0.1);
+    color: #dc2626;
+  }
+  
+  .summary-box {
+    padding: 2rem;
+    height: fit-content;
+  }
+  
+  .summary-title {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    color: var(--c-navy);
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(126, 184, 224, 0.2);
+  }
+  
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    color: var(--c-text-main);
+  }
+  
+  .summary-divider {
+    border: 0;
+    height: 1px;
+    background: rgba(126, 184, 224, 0.2);
+    margin: 1.5rem 0;
+  }
+  
+  .summary-row.total {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--c-navy);
+    margin-bottom: 2rem;
+  }
+  
+  .checkout-btn {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .shipping-notice {
+    font-size: 0.85rem;
+    color: var(--c-text-light);
+    text-align: center;
+  }
+  
+  .hide-desktop { display: none; }
+  
+  @media (max-width: 768px) {
+    .cart-item {
+      grid-template-columns: 80px 1fr;
+      position: relative;
+    }
+    
+    .item-quantity {
+      grid-column: 2;
+    }
+    
+    .remove-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+    }
+    
+    .item-total {
+      display: none;
+    }
+    
+    .hide-desktop { display: block; margin-top: 0.25rem; }
+    .hide-mobile { display: none; }
+  }
+  
+  @media (min-width: 992px) {
+    .cart-grid {
+      grid-template-columns: 1fr 350px;
+      align-items: start;
+    }
+  }
+</style>
+
+<script>
+  import confetti from 'canvas-confetti';
+
+  const cartItemsContainer = document.querySelector('.cart-items');
+  
+  if (cartItemsContainer) {
+    const updateItemQuantity = async (id: string, newQuantity: number, itemEl: HTMLElement) => {
+      itemEl.classList.add('loading');
+      
+      try {
+        const res = await fetch('/api/cart', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, quantity: newQuantity })
+        });
+        
+        if (res.ok) {
+           // We'll just reload the page to refresh SSR totals. 
+           // In a real SPA we'd update DOM without reload, but for this simple app reload is fine.
+           window.location.reload();
+        } else {
+           console.error('Update failed');
+           itemEl.classList.remove('loading');
+        }
+      } catch (err) {
+        console.error(err);
+        itemEl.classList.remove('loading');
+      }
+    };
+    
+    // Add event listeners to all cart items
+    document.querySelectorAll('.cart-item').forEach(item => {
+      const id = (item as HTMLElement).dataset.id!;
+      const minusBtn = item.querySelector('.btn-minus');
+      const plusBtn = item.querySelector('.btn-plus');
+      const removeBtn = item.querySelector('.remove-btn');
+      const qtyInput = item.querySelector('.qty-input') as HTMLInputElement;
+      
+      minusBtn?.addEventListener('click', () => {
+         const current = parseInt(qtyInput.value);
+         if (current > 0) updateItemQuantity(id, current - 1, item as HTMLElement);
+      });
+      
+      plusBtn?.addEventListener('click', () => {
+         const current = parseInt(qtyInput.value);
+         updateItemQuantity(id, current + 1, item as HTMLElement);
+      });
+      
+      removeBtn?.addEventListener('click', async () => {
+         item.classList.add('loading');
+         try {
+           const res = await fetch(`/api/cart?id=${id}`, { method: 'DELETE' });
+           if (res.ok) window.location.reload();
+         } catch(e) {
+           item.classList.remove('loading');
+         }
+      });
+      
+      qtyInput?.addEventListener('change', () => {
+         const current = parseInt(qtyInput.value) || 0;
+         updateItemQuantity(id, current, item as HTMLElement);
+      });
+    });
+  }
+
+  // Checkout button
+  const checkoutBtn = document.querySelector('.checkout-btn');
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener('click', () => {
+        const originalText = checkoutBtn.innerHTML;
+        checkoutBtn.innerHTML = 'Memproses...';
+        
+        setTimeout(() => {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#7eb8e0', '#3a7bd5', '#ffffff']
+            });
+            checkoutBtn.innerHTML = 'Pesanan Dibuat! ✓';
+            setTimeout(() => {
+                checkoutBtn.innerHTML = originalText;
+            }, 3000);
+        }, 1500);
+    });
+  }
+</script>

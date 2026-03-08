@@ -1,0 +1,50 @@
+
+> thesantara@0.0.1 build
+> astro build
+
+[2m21.17.03[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+[2m21.17.03[22m [34m[content][39m Syncing content
+[2m21.17.03[22m [34m[content][39m Synced content
+[2m21.17.03[22m [34m[types][39m Generated [2m50ms[22m
+[2m21.17.03[22m [34m[build][39m output: [34m"static"[39m
+[2m21.17.03[22m [34m[build][39m mode: [34m"server"[39m
+[2m21.17.03[22m [34m[build][39m directory: [34mC:\Users\risqi.ahmad\Explore\PERSONAL\thesantara\dist\[39m
+[2m21.17.03[22m [34m[build][39m adapter: [32m@astrojs/node[39m
+[2m21.17.03[22m [34m[build][39m Collecting build info...
+[2m21.17.03[22m [34m[build][39m [32m✓ Completed in 99ms.[39m
+[2m21.17.03[22m [34m[build][39m Building server entrypoints...
+[2m21.17.04[22m [34m[vite][39m [32m✓ built in 1.19s[39m
+[2m21.17.04[22m [34m[build][39m [32m✓ Completed in 1.24s.[39m
+
+[42m[30m building client (vite) [39m[49m
+[2m21.17.04[22m [34m[vite][39m transforming...
+[2m21.17.04[22m [34m[vite][39m [32m✓[39m 5 modules transformed.
+[2m21.17.04[22m [34m[vite][39m rendering chunks...
+[2m21.17.04[22m [34m[vite][39m computing gzip size...
+[2m21.17.04[22m [34m[vite][39m [2mdist/client/[22m[36m_astro/cart.astro_astro_type_script_index_0_lang.v0t4yb6j.js  [39m[1m[2m11.97 kB[22m[1m[22m[2m │ gzip: 4.80 kB[22m
+[2m21.17.04[22m [34m[vite][39m [32m✓ built in 90ms[39m
+
+[42m[30m prerendering static routes [39m[49m
+[2m21.17.04[22m [35mλ[39m src/pages/api/cart.ts
+[2m21.17.04[22m   [34m└─[39m [2m/api/cart[22m [2m(+23ms)[22m 
+[2m21.17.04[22m [35mλ[39m src/pages/api/products.ts
+[2m21.17.04[22m   [34m└─[39m [2m/api/products[22m [2m(+3ms)[22m 
+[2m21.17.04[22m [32m▶[39m src/pages/cart.astro
+[2m21.17.04[22m   [34m└─[39m [2m/cart/index.html[22m [2m(+7ms)[22m 
+[2m21.17.04[22m [32m▶[39m src/pages/product/[id].astro
+[31m[1m21.17.04[22m [ERROR] [build][39m Failed to call getStaticPaths for src/pages/product/[id].astro
+[31m[GetStaticPathsRequired][39m `getStaticPaths()` function is required for dynamic routes. Make sure that you `export` a `getStaticPaths` function from your dynamic route.
+  [1mHint:[22m
+[33m    See [4mhttps://docs.astro.build/en/guides/routing/#dynamic-routes[24m for more information on dynamic routes.
+    
+    	If you meant for this route to be server-rendered, set `export const prerender = false;` in the page.[39m
+  [1mError reference:[22m
+    [36m[4mhttps://docs.astro.build/en/reference/errors/get-static-paths-required/[24m[39m
+  [1mLocation:[22m
+    [4msrc/pages/product/[id].astro:0:0[24m
+  [1mStack trace:[22m
+[2m    at validateDynamicRouteModule (file:///C:/Users/risqi.ahmad/Explore/PERSONAL/thesantara/node_modules/astro/dist/core/routing/validation.js:19:11)
+    at getPathsForRoute (file:///C:/Users/risqi.ahmad/Explore/PERSONAL/thesantara/node_modules/astro/dist/core/build/generate.js:213:31)
+    at async generatePages (file:///C:/Users/risqi.ahmad/Explore/PERSONAL/thesantara/node_modules/astro/dist/core/build/generate.js:93:9)
+    at async AstroBuilder.build (file:///C:/Users/risqi.ahmad/Explore/PERSONAL/thesantara/node_modules/astro/dist/core/build/index.js:157:5)
+    at async build (file:///C:/Users/risqi.ahmad/Explore/PERSONAL/thesantara/node_modules/astro/dist/core/build/index.js:45:3)[22m

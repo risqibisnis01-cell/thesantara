@@ -1,0 +1,89 @@
+---
+import CartIcon from './CartIcon.astro';
+---
+
+<header class="header glass">
+  <div class="container header-content">
+    <a href="/" class="logo">
+      <span class="logo-icon">☁️</span>
+      Santara
+    </a>
+    
+    <nav class="nav-links">
+      <a href="/">Beranda</a>
+      <a href="/shop">Belanja</a>
+      <a href="/about">Tentang Kami</a>
+    </nav>
+    
+    <div class="header-actions">
+      <CartIcon />
+    </div>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--header-h);
+    z-index: 100;
+  }
+  
+  .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--c-navy);
+  }
+  
+  .logo-icon {
+    font-size: 1.8rem;
+  }
+  
+  .nav-links {
+    display: none;
+    gap: 2rem;
+  }
+  
+  .nav-links a {
+    font-weight: 500;
+    position: relative;
+  }
+  
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--c-accent);
+    transition: width var(--transition-normal);
+  }
+  
+  .nav-links a:hover {
+    color: var(--c-accent);
+  }
+  
+  .nav-links a:hover::after {
+    width: 100%;
+  }
+  
+  @media (min-width: 768px) {
+    .nav-links {
+      display: flex;
+    }
+  }
+</style>
